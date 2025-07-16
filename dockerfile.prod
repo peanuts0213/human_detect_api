@@ -1,0 +1,18 @@
+### 🧱 Stage 1: Build the JAR using Gradle
+FROM gradle:8.5-jdk21 AS builder
+
+WORKDIR /app
+
+COPY build.gradle settings.gradle gradlew gradlew.bat /app/
+COPY gradle /app/gradle
+
+RUN ./gradlew dependencies
+COPY . /app
+RUN ./gradlew clean bootJar
+
+### 🐳 Stage 2: Run the JAR
+FROM eclipse-temurin:21-jdk-jammy
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
